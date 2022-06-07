@@ -3,7 +3,6 @@ import client.StepsForGet;
 import client.StepsForPost;
 import com.github.javafaker.Faker;
 import io.qameta.allure.junit4.DisplayName;
-import io.restassured.response.Response;
 import jdk.jfr.Description;
 import model.CreateOrder;
 import model.Data;
@@ -20,10 +19,10 @@ public class CreateOrderTest {
     String email = Faker.instance().internet().emailAddress();
     String password = Faker.instance().internet().password();
     String name = Faker.instance().name().firstName();
-    String accessToken;
+    String accessToken = "";
     List<Data> ingredients;
-    String idIngr1;
-    String idIngr2;
+    String idIngrOne;
+    String idIngrTwo;
     List<String> ingredientsForOrder = new ArrayList<>();
 
     @After
@@ -37,10 +36,10 @@ public class CreateOrderTest {
     public void createOrderCorrectTest() {
         accessToken = StepsForPost.doPostRequestForCreateUser(new UserCreate(email, password, name)).body().as(UserCreate.class).getAccessToken();
         ingredients = StepsForGet.doGetRequestForGetIngridients().body().as(CreateOrder.class).getData();
-        idIngr1 = ingredients.get(0).get_id();
-        idIngr2 = ingredients.get(1).get_id();
-        ingredientsForOrder.add(idIngr1);
-        ingredientsForOrder.add(idIngr2);
+        idIngrOne = ingredients.get(0).get_id();
+        idIngrTwo = ingredients.get(1).get_id();
+        ingredientsForOrder.add(idIngrOne);
+        ingredientsForOrder.add(idIngrTwo);
 
         StepsForPost.doPostRequestForCreateOrder(new CreateOrder(ingredientsForOrder), accessToken)
                 .then().assertThat().body("success", equalTo(true)).and().statusCode(200);
@@ -51,12 +50,10 @@ public class CreateOrderTest {
     @Description("Можно создать заказ без токена. Запрос возвращает правильный код ответа. Успешный запрос возвращает success:true")
     public void createOrderWithoutTokenCorrectTest() {
         ingredients = StepsForGet.doGetRequestForGetIngridients().body().as(CreateOrder.class).getData();
-        idIngr1 = ingredients.get(0).get_id();
-        idIngr2 = ingredients.get(1).get_id();
-        ingredientsForOrder.add(idIngr1);
-        ingredientsForOrder.add(idIngr2);
-
-        accessToken = "";
+        idIngrOne = ingredients.get(0).get_id();
+        idIngrTwo = ingredients.get(1).get_id();
+        ingredientsForOrder.add(idIngrOne);
+        ingredientsForOrder.add(idIngrTwo);
 
         StepsForPost.doPostRequestForCreateOrderWithoutToken(new CreateOrder(ingredientsForOrder))
                 .then().assertThat().body("success", equalTo(true)).and().statusCode(200);
@@ -66,7 +63,6 @@ public class CreateOrderTest {
     @DisplayName("Невозможно создать заказ без ингридиентов. Запрос возвращает правильный код ответа 400. Запрос возвращает success:false")
     @Description("Невозможно создать заказ без ингридиентов. Запрос возвращает правильный код ответа 400. Запрос возвращает success:false")
     public void createOrderWithoutIngredientUnorrectTest() {
-        accessToken = "";
 
         StepsForPost.doPostRequestForCreateOrderWithoutIngredient()
                 .then().assertThat().body("success", equalTo(false)).and().statusCode(400);
@@ -76,12 +72,10 @@ public class CreateOrderTest {
     @DisplayName("Невозможно создать заказ без ингридиентов. Запрос возвращает правильный код ответа 400. Запрос возвращает success:false")
     @Description("Можно создать заказ без токена. Запрос возвращает правильный код ответа. Успешный запрос возвращает success:true")
     public void createOrderUncorrectIngredientNegativeTest() {
-        idIngr1 = Faker.instance().food().ingredient();
-        idIngr2 = Faker.instance().food().ingredient();
-        ingredientsForOrder.add(idIngr1);
-        ingredientsForOrder.add(idIngr2);
-
-        accessToken = "";
+        idIngrOne = Faker.instance().food().ingredient();
+        idIngrTwo = Faker.instance().food().ingredient();
+        ingredientsForOrder.add(idIngrOne);
+        ingredientsForOrder.add(idIngrTwo);
 
         StepsForPost.doPostRequestForCreateOrderWithoutToken(new CreateOrder(ingredientsForOrder))
                 .then().assertThat().statusCode(500);
